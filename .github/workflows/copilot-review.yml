@@ -1,0 +1,22 @@
+name: copilot-review
+
+on:
+  workflow_call:
+    secrets:
+      COPILOT_REVIEW_TOKEN:
+        required: true
+
+jobs:
+  request:
+    if: >-
+      github.event.pull_request.draft == false &&
+      !startsWith(github.head_ref, 'release/') &&
+      !startsWith(github.head_ref, 'refactor/')
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ secrets.COPILOT_REVIEW_TOKEN }}
+        run: |
+          gh api -X POST \
+            repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/requested_reviewers \
+            -f 'reviewers[]=copilot-pull-request-reviewer[bot]'
